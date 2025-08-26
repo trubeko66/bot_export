@@ -115,8 +115,10 @@ def generate_markdown(messages, channel, media_files):
                 lines.append(f"**File Size:** {size_mb:.2f} MB\n")
             
             if message['duration']:
-                duration_min = message['duration'] // 60
-                duration_sec = message['duration'] % 60
+                # Ensure duration is an integer to avoid formatting errors
+                duration_total = int(float(message['duration']))
+                duration_min = duration_total // 60
+                duration_sec = duration_total % 60
                 lines.append(f"**Duration:** {duration_min}:{duration_sec:02d}\n")
         
         # Statistics
