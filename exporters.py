@@ -10,7 +10,7 @@ import aiofiles
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Callable
 from telethon import TelegramClient
-from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument, MessageMediaVideo
+from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument
 import pytz
 
 from config import bot_config, export_config
