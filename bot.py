@@ -18,6 +18,7 @@ from telegram.constants import ParseMode
 from config import bot_config, export_config
 from exporters import ChannelExporter
 from user_settings import UserSettingsManager
+from languages import get_text, get_language_name
 
 # Configure logging
 logging.basicConfig(
@@ -37,22 +38,15 @@ class TelegramExportBot:
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start command"""
         user = update.effective_user
-        welcome_text = (
-            f"👋 Welcome to Channel Export Bot, {user.first_name}!\n\n"
-            "I can help you export Telegram channels in various formats:\n"
-            "• JSON format\n"
-            "• CSV format\n"
-            "• Markdown format\n\n"
-            "Features:\n"
-            "• Export with or without media files\n"
-            "• Customizable export settings\n"
-            "• Multiple format support\n\n"
-            "Send me a channel username/link or use /menu to configure settings."
-        )
+        user_id = user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        welcome_text = get_text(lang, 'welcome_text', name=user.first_name)
         
         keyboard = [
-            [InlineKeyboardButton("📋 Settings Menu", callback_data="main_menu")],
-            [InlineKeyboardButton("ℹ️ Help", callback_data="help")],
+            [InlineKeyboardButton(get_text(lang, 'btn_settings_menu'), callback_data="main_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_help'), callback_data="help")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -64,29 +58,15 @@ class TelegramExportBot:
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /help command"""
-        help_text = (
-            "🔧 <b>How to use the bot:</b>\n\n"
-            "1. <b>Setup:</b> Configure your export preferences in the menu\n"
-            "2. <b>Export:</b> Send a channel username (e.g., @channelname) or link\n"
-            "3. <b>Download:</b> Get your exported file\n\n"
-            "<b>Commands:</b>\n"
-            "/start - Start the bot\n"
-            "/menu - Open settings menu\n"
-            "/help - Show this help\n"
-            "/status - Check bot status\n\n"
-            "<b>Supported formats:</b>\n"
-            "• JSON - Complete message data\n"
-            "• CSV - Tabular format\n"
-            "• Markdown - Human-readable format\n\n"
-            "<b>Channel input examples:</b>\n"
-            "• @channelname\n"
-            "• https://t.me/channelname\n"
-            "• channelname (without @)\n"
-        )
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        help_text = get_text(lang, 'help_text')
         
         keyboard = [
-            [InlineKeyboardButton("📋 Settings Menu", callback_data="main_menu")],
-            [InlineKeyboardButton("🔙 Back", callback_data="start")],
+            [InlineKeyboardButton(get_text(lang, 'btn_settings_menu'), callback_data="main_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="start")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -104,20 +84,24 @@ class TelegramExportBot:
         """Handle /status command"""
         user_id = update.effective_user.id
         user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
         
-        status_text = (
-            "📊 <b>Bot Status</b>\n\n"
-            f"🆔 User ID: {user_id}\n"
-            f"📋 Export Format: {user_settings.export_format.upper()}\n"
-            f"📎 Include Media: {'Yes' if user_settings.include_media else 'No'}\n"
-            f"📏 Max Messages: {user_settings.max_messages}\n"
-            f"🕐 Last Export: {user_settings.last_export or 'Never'}\n\n"
-            f"🤖 Bot Version: 1.0.0\n"
-            f"📅 Current Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        language_name = get_language_name(lang, lang)
+        media_status = get_text(lang, 'yes') if user_settings.include_media else get_text(lang, 'no')
+        last_export = user_settings.last_export or 'Never'
+        
+        status_text = get_text(lang, 'status_text',
+            user_id=user_id,
+            language=language_name,
+            format=user_settings.export_format.upper(),
+            media=media_status,
+            max_messages=user_settings.max_messages,
+            last_export=last_export,
+            current_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         )
         
         keyboard = [
-            [InlineKeyboardButton("📋 Settings Menu", callback_data="main_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_settings_menu'), callback_data="main_menu")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -131,21 +115,25 @@ class TelegramExportBot:
         """Show main settings menu"""
         user_id = update.effective_user.id
         user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
         
-        menu_text = (
-            "⚙️ <b>Export Settings</b>\n\n"
-            f"📋 Format: <b>{user_settings.export_format.upper()}</b>\n"
-            f"📎 Include Media: <b>{'Yes' if user_settings.include_media else 'No'}</b>\n"
-            f"📏 Max Messages: <b>{user_settings.max_messages}</b>\n\n"
-            "Select an option to configure:"
+        language_name = get_language_name(lang, lang)
+        media_status = get_text(lang, 'yes') if user_settings.include_media else get_text(lang, 'no')
+        
+        menu_text = get_text(lang, 'main_menu_text',
+            language=language_name,
+            format=user_settings.export_format.upper(),
+            media=media_status,
+            max_messages=user_settings.max_messages
         )
         
         keyboard = [
-            [InlineKeyboardButton("📋 Export Format", callback_data="format_menu")],
-            [InlineKeyboardButton("📎 Media Settings", callback_data="media_menu")],
-            [InlineKeyboardButton("📏 Message Limit", callback_data="limit_menu")],
-            [InlineKeyboardButton("🔄 Reset to Defaults", callback_data="reset_settings")],
-            [InlineKeyboardButton("ℹ️ Help", callback_data="help")],
+            [InlineKeyboardButton(get_text(lang, 'btn_language'), callback_data="language_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_export_format'), callback_data="format_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_media_settings'), callback_data="media_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_message_limit'), callback_data="limit_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_reset_settings'), callback_data="reset_settings")],
+            [InlineKeyboardButton(get_text(lang, 'btn_help'), callback_data="help")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -172,6 +160,8 @@ class TelegramExportBot:
         
         if data == "main_menu":
             await self.show_main_menu(update, context)
+        elif data == "language_menu":
+            await self.show_language_menu(update, context)
         elif data == "format_menu":
             await self.show_format_menu(update, context)
         elif data == "media_menu":
@@ -182,6 +172,9 @@ class TelegramExportBot:
             await self.show_help(update, context)
         elif data == "reset_settings":
             await self.reset_user_settings(update, context, user_id)
+        elif data.startswith("set_language_"):
+            language = data.replace("set_language_", "")
+            await self.set_language(update, context, user_id, language)
         elif data.startswith("set_format_"):
             format_type = data.replace("set_format_", "")
             await self.set_export_format(update, context, user_id, format_type)
@@ -192,30 +185,45 @@ class TelegramExportBot:
             limit = int(data.replace("set_limit_", ""))
             await self.set_message_limit(update, context, user_id, limit)
 
+    async def show_language_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show language selection menu"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        current_language = get_language_name(lang, lang)
+        menu_text = get_text(lang, 'language_menu_text', current_language=current_language)
+        
+        keyboard = [
+            [InlineKeyboardButton(get_text(lang, 'btn_english'), callback_data="set_language_en")],
+            [InlineKeyboardButton(get_text(lang, 'btn_russian'), callback_data="set_language_ru")],
+            [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="main_menu")],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.callback_query.edit_message_text(
+            menu_text, 
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.HTML
+        )
+
     async def show_format_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show export format selection menu"""
         user_id = update.effective_user.id
         user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
         
-        menu_text = (
-            "📋 <b>Export Format Selection</b>\n\n"
-            f"Current format: <b>{user_settings.export_format.upper()}</b>\n\n"
-            "<b>Available formats:</b>\n"
-            "• JSON - Complete message data with metadata\n"
-            "• CSV - Tabular format for spreadsheet apps\n"
-            "• Markdown - Human-readable text format\n\n"
-            "Select your preferred format:"
-        )
+        menu_text = get_text(lang, 'format_menu_text', format=user_settings.export_format.upper())
         
         keyboard = [
-            [InlineKeyboardButton("📄 JSON", callback_data="set_format_json")],
-            [InlineKeyboardButton("📊 CSV", callback_data="set_format_csv")],
-            [InlineKeyboardButton("📝 Markdown", callback_data="set_format_markdown")],
-            [InlineKeyboardButton("🔙 Back", callback_data="main_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_json'), callback_data="set_format_json")],
+            [InlineKeyboardButton(get_text(lang, 'btn_csv'), callback_data="set_format_csv")],
+            [InlineKeyboardButton(get_text(lang, 'btn_markdown'), callback_data="set_format_markdown")],
+            [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="main_menu")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await query.edit_message_text(
+        await update.callback_query.edit_message_text(
             menu_text, 
             reply_markup=reply_markup,
             parse_mode=ParseMode.HTML
@@ -225,20 +233,15 @@ class TelegramExportBot:
         """Show media inclusion menu"""
         user_id = update.effective_user.id
         user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
         
-        menu_text = (
-            "📎 <b>Media Settings</b>\n\n"
-            f"Current setting: <b>{'Include Media' if user_settings.include_media else 'No Media'}</b>\n\n"
-            "<b>Options:</b>\n"
-            "• <b>Include Media</b> - Download photos, videos, documents\n"
-            "• <b>No Media</b> - Text messages only (faster export)\n\n"
-            "⚠️ Note: Including media increases export time and file size."
-        )
+        media_setting = get_text(lang, 'include_media') if user_settings.include_media else get_text(lang, 'no_media')
+        menu_text = get_text(lang, 'media_menu_text', media_setting=media_setting)
         
         keyboard = [
-            [InlineKeyboardButton("✅ Include Media", callback_data="set_media_yes")],
-            [InlineKeyboardButton("❌ No Media", callback_data="set_media_no")],
-            [InlineKeyboardButton("🔙 Back", callback_data="main_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_include_media'), callback_data="set_media_yes")],
+            [InlineKeyboardButton(get_text(lang, 'btn_no_media'), callback_data="set_media_no")],
+            [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="main_menu")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -252,12 +255,9 @@ class TelegramExportBot:
         """Show message limit menu"""
         user_id = update.effective_user.id
         user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
         
-        menu_text = (
-            "📏 <b>Message Limit Settings</b>\n\n"
-            f"Current limit: <b>{user_settings.max_messages} messages</b>\n\n"
-            "Choose the maximum number of messages to export:"
-        )
+        menu_text = get_text(lang, 'limit_menu_text', limit=user_settings.max_messages)
         
         keyboard = [
             [InlineKeyboardButton("100", callback_data="set_limit_100")],
@@ -265,8 +265,8 @@ class TelegramExportBot:
             [InlineKeyboardButton("1000", callback_data="set_limit_1000")],
             [InlineKeyboardButton("5000", callback_data="set_limit_5000")],
             [InlineKeyboardButton("10000", callback_data="set_limit_10000")],
-            [InlineKeyboardButton("No Limit", callback_data="set_limit_0")],
-            [InlineKeyboardButton("🔙 Back", callback_data="main_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_no_limit'), callback_data="set_limit_0")],
+            [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="main_menu")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -278,23 +278,14 @@ class TelegramExportBot:
 
     async def show_help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show help information"""
-        help_text = (
-            "ℹ️ <b>Help & Information</b>\n\n"
-            "<b>How to export a channel:</b>\n"
-            "1. Configure your settings in the menu\n"
-            "2. Send a channel username or link\n"
-            "3. Wait for the export to complete\n"
-            "4. Download your file\n\n"
-            "<b>Supported channel formats:</b>\n"
-            "• @channelname\n"
-            "• https://t.me/channelname\n"
-            "• channelname\n\n"
-            "<b>Need more help?</b>\n"
-            "Contact the bot administrator."
-        )
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        help_text = get_text(lang, 'help_menu_text')
         
         keyboard = [
-            [InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_back_to_menu'), callback_data="main_menu")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -304,12 +295,33 @@ class TelegramExportBot:
             parse_mode=ParseMode.HTML
         )
 
-    async def set_export_format(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, format_type: str):
-        """Set user's export format"""
-        self.settings_manager.update_user_setting(user_id, 'export_format', format_type)
+    async def set_language(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, language: str):
+        """Set user's language"""
+        self.settings_manager.update_user_setting(user_id, 'language', language)
+        
+        language_name = get_language_name(language, language)
+        message_text = get_text(language, 'language_set', language=language_name)
         
         await update.callback_query.edit_message_text(
-            f"✅ Export format set to <b>{format_type.upper()}</b>",
+            message_text,
+            parse_mode=ParseMode.HTML
+        )
+        
+        # Show main menu after a short delay
+        await asyncio.sleep(1)
+        await self.show_main_menu(update, context)
+
+    async def set_export_format(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, format_type: str):
+        """Set user's export format"""
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        self.settings_manager.update_user_setting(user_id, 'export_format', format_type)
+        
+        message_text = get_text(lang, 'format_set', format=format_type.upper())
+        
+        await update.callback_query.edit_message_text(
+            message_text,
             parse_mode=ParseMode.HTML
         )
         
@@ -319,11 +331,18 @@ class TelegramExportBot:
 
     async def set_media_setting(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, include_media: bool):
         """Set user's media inclusion setting"""
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
         self.settings_manager.update_user_setting(user_id, 'include_media', include_media)
         
-        status = "enabled" if include_media else "disabled"
+        if include_media:
+            message_text = get_text(lang, 'media_enabled')
+        else:
+            message_text = get_text(lang, 'media_disabled')
+        
         await update.callback_query.edit_message_text(
-            f"✅ Media inclusion <b>{status}</b>",
+            message_text,
             parse_mode=ParseMode.HTML
         )
         
@@ -333,11 +352,16 @@ class TelegramExportBot:
 
     async def set_message_limit(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, limit: int):
         """Set user's message limit"""
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
         self.settings_manager.update_user_setting(user_id, 'max_messages', limit)
         
-        limit_text = "No limit" if limit == 0 else f"{limit} messages"
+        limit_text = get_text(lang, 'no_limit_text') if limit == 0 else f"{limit} messages"
+        message_text = get_text(lang, 'limit_set', limit=limit_text)
+        
         await update.callback_query.edit_message_text(
-            f"✅ Message limit set to <b>{limit_text}</b>",
+            message_text,
             parse_mode=ParseMode.HTML
         )
         
@@ -347,10 +371,15 @@ class TelegramExportBot:
 
     async def reset_user_settings(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int):
         """Reset user settings to defaults"""
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
         self.settings_manager.reset_user_settings(user_id)
         
+        message_text = get_text(lang, 'settings_reset')
+        
         await update.callback_query.edit_message_text(
-            "✅ Settings reset to defaults",
+            message_text,
             parse_mode=ParseMode.HTML
         )
         
@@ -362,27 +391,27 @@ class TelegramExportBot:
         """Handle channel export requests"""
         user_id = update.effective_user.id
         message_text = update.message.text.strip()
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
         
         # Extract channel username
         channel_username = self._extract_channel_username(message_text)
         
         if not channel_username:
             await update.message.reply_text(
-                "❌ Invalid channel format. Please send:\n"
-                "• @channelname\n"
-                "• https://t.me/channelname\n"
-                "• channelname"
+                get_text(lang, 'invalid_channel')
             )
             return
         
-        user_settings = self.settings_manager.get_user_settings(user_id)
-        
         # Send initial status message
-        status_message = await update.message.reply_text(
-            f"🔄 Starting export of @{channel_username}...\n"
-            f"Format: {user_settings.export_format.upper()}\n"
-            f"Media: {'Included' if user_settings.include_media else 'Excluded'}"
+        media_status = get_text(lang, 'included') if user_settings.include_media else get_text(lang, 'excluded')
+        status_text = get_text(lang, 'export_starting',
+            channel=channel_username,
+            format=user_settings.export_format.upper(),
+            media=media_status
         )
+        
+        status_message = await update.message.reply_text(status_text)
         
         try:
             # Start export process
@@ -402,10 +431,8 @@ class TelegramExportBot:
             
         except Exception as e:
             logger.error(f"Export failed for user {user_id}: {str(e)}")
-            await status_message.edit_text(
-                f"❌ Export failed: {str(e)}\n\n"
-                "Please check the channel username and try again."
-            )
+            error_text = get_text(lang, 'export_failed', error=str(e))
+            await status_message.edit_text(error_text)
 
     def _extract_channel_username(self, text: str) -> str:
         """Extract channel username from various formats"""
@@ -435,14 +462,16 @@ class TelegramExportBot:
     async def _send_export_file(self, update: Update, context: ContextTypes.DEFAULT_TYPE, 
                                file_path: str, channel_username: str, user_settings):
         """Send the exported file to user"""
+        lang = user_settings.language
+        
         try:
             file_size = os.path.getsize(file_path) / (1024 * 1024)  # Size in MB
             
-            caption = (
-                f"📁 Export completed for @{channel_username}\n"
-                f"📋 Format: {user_settings.export_format.upper()}\n"
-                f"📏 File size: {file_size:.2f} MB\n"
-                f"🕐 Exported at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            caption = get_text(lang, 'export_completed',
+                channel=channel_username,
+                format=user_settings.export_format.upper(),
+                size=file_size,
+                time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             )
             
             with open(file_path, 'rb') as file:
@@ -457,9 +486,8 @@ class TelegramExportBot:
             
         except Exception as e:
             logger.error(f"Failed to send file: {str(e)}")
-            await update.message.reply_text(
-                f"❌ Failed to send export file: {str(e)}"
-            )
+            error_text = get_text(lang, 'file_send_failed', error=str(e))
+            await update.message.reply_text(error_text)
 
     def run(self):
         """Start the bot"""

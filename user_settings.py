@@ -14,6 +14,7 @@ from config import export_config
 class UserSettings:
     """User settings data class"""
     user_id: int
+    language: str = 'en'
     export_format: str = 'json'
     include_media: bool = False
     max_messages: int = 10000
