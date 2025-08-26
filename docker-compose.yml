@@ -12,6 +12,12 @@ services:
       - API_ID=${API_ID}
       - API_HASH=${API_HASH}
       
+      # Telegram Authorization (for Docker)
+      - PHONE_NUMBER=${PHONE_NUMBER}
+      - CLOUD_PASSWORD=${CLOUD_PASSWORD}
+      - TELEGRAM_CODE=${TELEGRAM_CODE}
+      - CODE_WAIT_TIMEOUT=${CODE_WAIT_TIMEOUT:-60}
+      
       # Export Configuration
       - DEFAULT_FORMAT=${DEFAULT_FORMAT:-json}
       - INCLUDE_MEDIA_BY_DEFAULT=${INCLUDE_MEDIA_BY_DEFAULT:-false}

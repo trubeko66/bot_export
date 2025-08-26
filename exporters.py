@@ -15,6 +15,7 @@ import pytz
 
 from config import bot_config, export_config
 from zip_utils import ZipArchiveCreator
+from auth_helper import auto_auth
 
 class ChannelExporter:
     """Handles channel export operations"""
@@ -25,14 +26,19 @@ class ChannelExporter:
         self.zip_creator = ZipArchiveCreator(export_config.export_folder)
     
     async def _get_client(self) -> TelegramClient:
-        """Get or create Telegram client"""
+        """Get or create Telegram client with automatic authentication"""
         if self.client is None:
-            self.client = TelegramClient(
-                self.session_name,
-                bot_config.api_id,
-                bot_config.api_hash
-            )
-            await self.client.start()
+            try:
+                # Используем автоматическую авторизацию
+                self.client = await auto_auth.get_or_create_client()
+            except Exception as e:
+                # Fallback к стандартному методу если автоавторизация не удалась
+                self.client = TelegramClient(
+                    self.session_name,
+                    bot_config.api_id,
+                    bot_config.api_hash
+                )
+                await self.client.start()
         return self.client
     
     async def export_channel(self, 

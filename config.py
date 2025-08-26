@@ -14,6 +14,8 @@ class BotConfig:
     bot_token: str
     api_id: int
     api_hash: str
+    phone_number: str = ''
+    password: str = ''
     admin_user_id: Optional[int] = None
     debug_mode: bool = False
     
@@ -24,6 +26,8 @@ class BotConfig:
             bot_token=os.getenv('BOT_TOKEN', ''),
             api_id=int(os.getenv('API_ID', '0')),
             api_hash=os.getenv('API_HASH', ''),
+            phone_number=os.getenv('PHONE_NUMBER', ''),
+            password=os.getenv('CLOUD_PASSWORD', ''),
             admin_user_id=int(os.getenv('ADMIN_USER_ID', '0')) if os.getenv('ADMIN_USER_ID') else None,
             debug_mode=os.getenv('DEBUG_MODE', 'false').lower() == 'true'
         )
