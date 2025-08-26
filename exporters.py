@@ -14,6 +14,7 @@ from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument
 import pytz
 
 from config import bot_config, export_config
+from zip_utils import ZipArchiveCreator
 
 class ChannelExporter:
     """Handles channel export operations"""
@@ -21,6 +22,7 @@ class ChannelExporter:
     def __init__(self):
         self.client = None
         self.session_name = "bot_session"
+        self.zip_creator = ZipArchiveCreator(export_config.export_folder)
     
     async def _get_client(self) -> TelegramClient:
         """Get or create Telegram client"""
@@ -103,9 +105,30 @@ class ChannelExporter:
                 raise ValueError(f"Unsupported export format: {export_format}")
             
             if progress_callback:
-                await progress_callback(f"✅ Export completed: {filename}")
+                await progress_callback(f"📦 Creating ZIP archive...")
             
-            return filepath
+            # Create ZIP archive
+            archive_path = await self.zip_creator.create_export_archive(
+                main_file_path=filepath,
+                media_files=media_files if include_media else [],
+                channel_username=channel_username,
+                export_format=export_format
+            )
+            
+            # Clean up original files after ZIP creation
+            files_to_cleanup = [filepath]
+            if include_media and media_files:
+                media_folder = os.path.join(export_config.export_folder, 'media')
+                if os.path.exists(media_folder):
+                    files_to_cleanup.append(media_folder)
+            
+            self.zip_creator.cleanup_files(files_to_cleanup)
+            
+            if progress_callback:
+                archive_size = self.zip_creator.get_archive_size_mb(archive_path)
+                await progress_callback(f"✅ Archive created: {os.path.basename(archive_path)} ({archive_size:.2f} MB)")
+            
+            return archive_path
             
         except Exception as e:
             if progress_callback:

@@ -138,7 +138,8 @@ LANGUAGES = {
             "📁 Export completed for @{channel}\n"
             "📋 Format: {format}\n"
             "📏 File size: {size:.2f} MB\n"
-            "🕐 Exported at: {time}"
+            "🕐 Exported at: {time}\n"
+            "📦 Archive type: ZIP"
         ),
         'export_failed': "❌ Export failed: {error}\n\nPlease check the channel username and try again.",
         'file_send_failed': "❌ Failed to send export file: {error}",
@@ -280,7 +281,8 @@ LANGUAGES = {
             "📁 Экспорт завершен для @{channel}\n"
             "📋 Формат: {format}\n"
             "📏 Размер файла: {size:.2f} МБ\n"
-            "🕐 Экспортировано в: {time}"
+            "🕐 Экспортировано в: {time}\n"
+            "📦 Тип архива: ZIP"
         ),
         'export_failed': "❌ Экспорт не удался: {error}\n\nПроверьте имя канала и попробуйте снова.",
         'file_send_failed': "❌ Не удалось отправить файл экспорта: {error}",

@@ -18,10 +18,13 @@
 ## ✨ Features
 
 - **Multiple Export Formats**: JSON, CSV, and Markdown
+- **ZIP Archive Delivery**: All exports packaged as convenient ZIP archives
 - **Media Support**: Download photos, videos, documents, and audio files
-- **Interactive Menu**: Easy-to-use inline keyboard interface
+- **Interactive Menu**: Easy-to-use inline keyboard interface with multilingual support
+- **Language Support**: Full English and Russian interface
 - **Flexible Settings**: Customizable export options per user
 - **Progress Tracking**: Real-time export progress updates
+- **Docker Support**: Ready-to-deploy Docker containers
 - **File Management**: Automatic cleanup and organized file structure
 - **Error Handling**: Robust error handling and user feedback
 
@@ -29,11 +32,13 @@
 
 ### Core Features
 1. **Channel Export**: Send any Telegram channel username/link to export its content
-2. **Format Selection**: Choose between JSON, CSV, or Markdown formats
-3. **Media Options**: Include or exclude media files in exports
-4. **Message Limits**: Set maximum number of messages to export
-5. **Settings Persistence**: User preferences are saved between sessions
-6. **Progress Updates**: Real-time status updates during export process
+2. **ZIP Archive Delivery**: All exports are automatically packaged as ZIP archives
+3. **Format Selection**: Choose between JSON, CSV, or Markdown formats
+4. **Language Support**: Switch between English and Russian interface
+5. **Media Options**: Include or exclude media files in exports
+6. **Message Limits**: Set maximum number of messages to export
+7. **Settings Persistence**: User preferences are saved between sessions
+8. **Progress Updates**: Real-time status updates during export process
 
 ### Export Formats
 
@@ -59,6 +64,7 @@
 
 The bot features an intuitive menu system:
 
+- **🌐 Language**: Switch between English and Russian interface
 - **📋 Export Format**: Choose JSON, CSV, or Markdown
 - **📎 Media Settings**: Include or exclude media files
 - **📏 Message Limit**: Set export limits (100, 500, 1K, 5K, 10K, or unlimited)
@@ -72,6 +78,28 @@ The bot features an intuitive menu system:
 - Python 3.8 or higher
 - Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
 - Telegram API credentials (from [my.telegram.org](https://my.telegram.org))
+- **Optional**: Docker for containerized deployment
+
+### Option 1: Docker Deployment (Recommended)
+
+For easy deployment with Docker:
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd bot_export
+
+# Configure environment
+cp .env.template .env
+# Edit .env with your credentials
+
+# Deploy with Docker Compose
+docker-compose up -d
+```
+
+See [DOCKER.md](DOCKER.md) for detailed Docker deployment instructions.
+
+### Option 2: Manual Installation
 
 ### Quick Setup
 
@@ -194,11 +222,21 @@ bot_export/
 ├── config.py           # Configuration management
 ├── exporters.py        # Export functionality
 ├── user_settings.py    # User settings management
+├── languages.py        # Multilingual support
+├── zip_utils.py        # ZIP archive utilities
 ├── requirements.txt    # Python dependencies
+├── Dockerfile          # Docker container configuration
+├── docker-compose.yml  # Docker Compose setup
+├── .dockerignore       # Docker ignore patterns
+├── .env.template       # Environment variables template
 ├── setup.bat          # Windows setup script
-├── .env.example       # Environment variables template
+├── setup.sh           # Linux/macOS setup script
+├── start.bat          # Windows start script
 ├── README.md          # This file
+├── DOCKER.md          # Docker deployment guide
+├── LANGUAGE_CHANGES.md # Language feature documentation
 ├── CHANGELOG.md       # Version history
+├── INSTALL.md         # Installation guide
 ├── exports/           # Export output directory
 │   └── media/        # Media files directory
 └── tests/            # Test files
@@ -208,6 +246,22 @@ bot_export/
 ```
 
 ## 🔍 Advanced Features
+
+### ZIP Archive Delivery
+
+- **Automatic Packaging**: All exports are automatically packaged as ZIP archives
+- **Organized Structure**: Clean file organization within archives
+- **Metadata Inclusion**: README files with export information
+- **Media Integration**: Media files properly organized in subfolders
+- **Compression**: Efficient compression to reduce file sizes
+- **Validation**: Archive integrity checking before delivery
+
+### Multilingual Support
+
+- **Interface Languages**: Complete English and Russian support
+- **Dynamic Switching**: Change language anytime through settings
+- **Persistent Preferences**: Language choice saved between sessions
+- **Localized Messages**: All user messages properly translated
 
 ### Media Handling
 

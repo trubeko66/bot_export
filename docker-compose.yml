@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build: .
+    container_name: telegram-export-bot
+    restart: unless-stopped
+    
+    environment:
+      # Telegram Bot Configuration
+      - BOT_TOKEN=${BOT_TOKEN}
+      - API_ID=${API_ID}
+      - API_HASH=${API_HASH}
+      
+      # Export Configuration
+      - DEFAULT_FORMAT=${DEFAULT_FORMAT:-json}
+      - INCLUDE_MEDIA_BY_DEFAULT=${INCLUDE_MEDIA_BY_DEFAULT:-false}
+      - MAX_MESSAGES_PER_EXPORT=${MAX_MESSAGES_PER_EXPORT:-10000}
+      - EXPORT_FOLDER=${EXPORT_FOLDER:-/app/exports}
+      
+      # Debug Mode
+      - DEBUG_MODE=${DEBUG_MODE:-false}
+      
+      # Python Configuration
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    
+    volumes:
+      # Persist exports and bot session
+      - ./exports:/app/exports
+      - ./data:/app/data
+      - ./logs:/app/logs
+    
+    # Optional: Health check endpoint
+    # ports:
+    #   - "8080:8080"
+    
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Optional: Add a separate volume for persistent data
+volumes:
+  bot_data:
+    driver: local
+  bot_exports:
+    driver: local
+  bot_logs:
+    driver: local
