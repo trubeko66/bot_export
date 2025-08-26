@@ -1,37 +1,46 @@
-# Changelog
+# Changelog / История изменений
 
 All notable changes to the Telegram Channel Export Bot project will be documented in this file.
+
+Все важные изменения в проекте Telegram Channel Export Bot будут задокументированы в этом файле.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+проект следует [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [1.0.0] - 2025-08-26
 
-### 🎉 Initial Release
+### 🎉 Initial Release / Первоначальный выпуск
 
-#### Added
-- **Core Bot Functionality**
-  - Telegram bot setup with python-telegram-bot library
-  - Interactive menu system with inline keyboards
-  - User settings management with persistent storage
-  - Command handlers for `/start`, `/help`, `/menu`, `/status`
+Полнофункциональный Telegram бот для экспорта каналов с поддержкой различных форматов и медиафайлов.
 
-- **Channel Export Features**
-  - Support for multiple export formats: JSON, CSV, Markdown
-  - Channel message fetching using Telethon library
-  - Real-time progress tracking during exports
-  - Automatic file cleanup after delivery
+Fully functional Telegram bot for channel export with support for multiple formats and media files.
 
-- **Export Formats**
-  - **JSON Export**: Complete message data with metadata, channel information, structured format for data analysis
-  - **CSV Export**: Tabular format compatible with spreadsheet applications, includes essential message data in columns
-  - **Markdown Export**: Human-readable text format with proper formatting, headers, and sections
+#### Added / Добавлено
+- **Основной функционал бота / Core Bot Functionality**
+  - Настройка Telegram бота с библиотекой python-telegram-bot
+  - Интерактивная система меню с инлайн-клавиатурой
+  - Управление настройками пользователя с постоянным хранением
+  - Обработчики команд для `/start`, `/help`, `/menu`, `/status`
 
-- **Media Support**
-  - Automatic media detection (photos, videos, documents, audio)
-  - Optional media download with file size tracking
-  - Organized media file storage in dedicated directories
-  - Duration information for video and audio files
+- **Функции экспорта каналов / Channel Export Features**
+  - Поддержка множественных форматов экспорта: JSON, CSV, Markdown
+  - Получение сообщений канала с помощью библиотеки Telethon
+  - Отслеживание прогресса в реальном времени во время экспорта
+  - Автоматическая очистка файлов после доставки
+
+- **Форматы экспорта / Export Formats**
+  - **JSON экспорт**: Полные данные сообщений с метаданными
+  - **CSV экспорт**: Табличный формат для приложений работы с таблицами
+  - **Markdown экспорт**: Читаемый человеком текстовый формат
+
+- **Поддержка медиа / Media Support**
+  - Автоматическое определение типов медиа (фото, видео, документы, аудио)
+  - Опциональная загрузка медиа с отслеживанием размера файлов
+  - Организованное хранение медиафайлов в отдельных каталогах
+  - Информация о продолжительности видео и аудиофайлов
 
 - **User Interface**
   - Interactive settings menu with format selection
