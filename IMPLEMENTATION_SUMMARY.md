@@ -103,7 +103,7 @@ cp .env.template .env
 # Edit .env with credentials
 
 # Deploy
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Option 2: Manual Installation

@@ -43,13 +43,13 @@ DEBUG_MODE=false
 
 ```bash
 # Build and start the bot
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f telegram-bot
+docker compose logs -f telegram-bot
 
 # Stop the bot
-docker-compose down
+docker compose down
 ```
 
 ## 🔧 Advanced Configuration
@@ -115,17 +115,17 @@ docker run -d \
 
 ```bash
 # Real-time logs
-docker-compose logs -f telegram-bot
+docker compose logs -f telegram-bot
 
 # Last 100 lines
-docker-compose logs --tail=100 telegram-bot
+docker compose logs --tail=100 telegram-bot
 ```
 
 ### Check Status
 
 ```bash
 # Container status
-docker-compose ps
+docker compose ps
 
 # Resource usage
 docker stats telegram-export-bot
@@ -135,10 +135,10 @@ docker stats telegram-export-bot
 
 ```bash
 # Restart bot
-docker-compose restart telegram-bot
+docker compose restart telegram-bot
 
 # Rebuild and restart
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ## 🔒 Security Considerations
@@ -187,7 +187,7 @@ The container runs as non-root user `appuser` for security.
 
 ```bash
 # Check logs for authentication errors
-docker-compose logs telegram-bot | grep -i "token"
+docker compose logs telegram-bot | grep -i "token"
 ```
 
 **Solution**: Verify `BOT_TOKEN` in `.env` file
@@ -213,10 +213,10 @@ deploy:
 
 ```bash
 # Check build logs
-docker-compose build --no-cache
+docker compose build --no-cache
 
 # Check container logs
-docker-compose logs telegram-bot
+docker compose logs telegram-bot
 ```
 
 ### Debug Mode
@@ -228,7 +228,7 @@ Enable debug logging:
 DEBUG_MODE=true
 
 # Restart container
-docker-compose restart telegram-bot
+docker compose restart telegram-bot
 ```
 
 ## 🔄 Updates and Maintenance
@@ -240,7 +240,7 @@ docker-compose restart telegram-bot
 git pull
 
 # Rebuild and restart
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### Backup Data
@@ -260,7 +260,7 @@ tar -xzf bot-backup-20240101.tar.gz
 docker system prune -a
 
 # Remove specific containers
-docker-compose down --rmi all --volumes
+docker compose down --rmi all --volumes
 ```
 
 ## 📋 Production Deployment
