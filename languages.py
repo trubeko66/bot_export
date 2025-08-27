@@ -145,7 +145,74 @@ LANGUAGES = {
         'file_send_failed': "❌ Failed to send export file: {error}",
         'included': "Included",
         'excluded': "Excluded",
-        'no_limit_text': "No limit"
+        'no_limit_text': "No limit",
+        # Server monitoring
+        'btn_server_stats': "🐧 Server Stats",
+        'server_stats_title': "🐧 <b>Server Statistics</b>",
+        'server_overview': (
+            "🖥️ <b>System Overview</b>\n\n"
+            "🏷️ Hostname: <code>{hostname}</code>\n"
+            "💻 OS: {os} {os_version}\n"
+            "🏗️ Architecture: {architecture}\n"
+            "🐍 Python: {python_version}\n\n"
+            "⏰ <b>Uptime Information</b>\n"
+            "🕐 System Uptime: {system_uptime}\n"
+            "🤖 Bot Uptime: {bot_uptime}\n"
+            "🚀 Boot Time: {boot_time}"
+        ),
+        'cpu_stats': (
+            "⚡ <b>CPU Statistics</b>\n\n"
+            "📊 Usage: <b>{usage:.1f}%</b>\n"
+            "🔢 Cores: {cores}\n"
+            "⚡ Frequency: {frequency:.0f} MHz\n\n"
+            "📈 <b>Load Average</b>\n"
+            "1m: {load_1m:.2f}\n"
+            "5m: {load_5m:.2f}\n"
+            "15m: {load_15m:.2f}"
+        ),
+        'memory_stats': (
+            "🧠 <b>Memory Usage</b>\n\n"
+            "📊 RAM Usage: <b>{used_gb:.1f} GB</b> / {total_gb:.1f} GB\n"
+            "📈 Usage: <b>{percent:.1f}%</b>\n"
+            "💾 Available: {available_gb:.1f} GB\n\n"
+            "🔄 <b>Swap Memory</b>\n"
+            "💿 Total: {swap_total_gb:.1f} GB\n"
+            "📊 Used: {swap_used_gb:.1f} GB ({swap_percent:.1f}%)"
+        ),
+        'disk_stats_title': "💾 <b>Disk Usage</b>",
+        'disk_stats_item': (
+            "💽 <b>{device}</b>\n"
+            "📁 Mount: <code>{mountpoint}</code>\n"
+            "📊 Used: <b>{used_gb:.1f} GB</b> / {total_gb:.1f} GB\n"
+            "📈 Usage: <b>{percent:.1f}%</b>\n"
+            "💾 Free: {free_gb:.1f} GB\n"
+            "🗂️ FS: {filesystem}\n"
+        ),
+        'network_stats_title': "🌐 <b>Network Activity</b>",
+        'network_stats_item': (
+            "🔌 <b>{interface}</b>\n"
+            "📤 Sent: {sent_total} ({sent_rate}/s)\n"
+            "📥 Received: {recv_total} ({recv_rate}/s)\n"
+            "📦 Packets: ↑{packets_sent} ↓{packets_recv}\n"
+            "❌ Errors: ↑{errors_out} ↓{errors_in}\n"
+        ),
+        'top_processes_title': "🔝 <b>Top 10 Processes</b>",
+        'process_item': (
+            "<b>{name}</b> (PID: {pid})\n"
+            "⚡ CPU: <b>{cpu:.1f}%</b> | 🧠 RAM: <b>{memory:.1f}%</b>\n"
+            "💾 Memory: {memory_mb:.1f} MB\n"
+            "⏰ Uptime: {uptime}\n"
+            "📊 Status: {status}\n"
+        ),
+        'btn_system_overview': "🖥️ System Overview",
+        'btn_cpu_stats': "⚡ CPU Stats",
+        'btn_memory_stats': "🧠 Memory Stats",
+        'btn_disk_stats': "💾 Disk Usage",
+        'btn_network_stats': "🌐 Network Stats",
+        'btn_top_processes': "🔝 Top Processes",
+        'btn_refresh_stats': "🔄 Refresh",
+        'stats_updated': "✅ Statistics updated",
+        'stats_error': "❌ Error getting statistics: {error}"
     },
     'ru': {
         'welcome_text': (
@@ -288,7 +355,74 @@ LANGUAGES = {
         'file_send_failed': "❌ Не удалось отправить файл экспорта: {error}",
         'included': "Включено",
         'excluded': "Исключено",
-        'no_limit_text': "Без лимита"
+        'no_limit_text': "Без лимита",
+        # Server monitoring
+        'btn_server_stats': "🐧 Статистика сервера",
+        'server_stats_title': "🐧 <b>Статистика сервера</b>",
+        'server_overview': (
+            "🖥️ <b>Обзор системы</b>\n\n"
+            "🏷️ Хост: <code>{hostname}</code>\n"
+            "💻 ОС: {os} {os_version}\n"
+            "🏗️ Архитектура: {architecture}\n"
+            "🐍 Python: {python_version}\n\n"
+            "⏰ <b>Время работы</b>\n"
+            "🕐 Система: {system_uptime}\n"
+            "🤖 Бот: {bot_uptime}\n"
+            "🚀 Загрузка: {boot_time}"
+        ),
+        'cpu_stats': (
+            "⚡ <b>Статистика ЦП</b>\n\n"
+            "📊 Загрузка: <b>{usage:.1f}%</b>\n"
+            "🔢 Ядра: {cores}\n"
+            "⚡ Частота: {frequency:.0f} МГц\n\n"
+            "📈 <b>Средняя нагрузка</b>\n"
+            "1м: {load_1m:.2f}\n"
+            "5м: {load_5m:.2f}\n"
+            "15м: {load_15m:.2f}"
+        ),
+        'memory_stats': (
+            "🧠 <b>Использование памяти</b>\n\n"
+            "📊 ОЗУ: <b>{used_gb:.1f} ГБ</b> / {total_gb:.1f} ГБ\n"
+            "📈 Загрузка: <b>{percent:.1f}%</b>\n"
+            "💾 Доступно: {available_gb:.1f} ГБ\n\n"
+            "🔄 <b>Файл подкачки</b>\n"
+            "💿 Всего: {swap_total_gb:.1f} ГБ\n"
+            "📊 Использовано: {swap_used_gb:.1f} ГБ ({swap_percent:.1f}%)"
+        ),
+        'disk_stats_title': "💾 <b>Использование диска</b>",
+        'disk_stats_item': (
+            "💽 <b>{device}</b>\n"
+            "📁 Монтирование: <code>{mountpoint}</code>\n"
+            "📊 Использовано: <b>{used_gb:.1f} ГБ</b> / {total_gb:.1f} ГБ\n"
+            "📈 Загрузка: <b>{percent:.1f}%</b>\n"
+            "💾 Свободно: {free_gb:.1f} ГБ\n"
+            "🗂️ ФС: {filesystem}\n"
+        ),
+        'network_stats_title': "🌐 <b>Сетевая активность</b>",
+        'network_stats_item': (
+            "🔌 <b>{interface}</b>\n"
+            "📤 Отправлено: {sent_total} ({sent_rate}/с)\n"
+            "📥 Получено: {recv_total} ({recv_rate}/с)\n"
+            "📦 Пакеты: ↑{packets_sent} ↓{packets_recv}\n"
+            "❌ Ошибки: ↑{errors_out} ↓{errors_in}\n"
+        ),
+        'top_processes_title': "🔝 <b>Топ 10 процессов</b>",
+        'process_item': (
+            "<b>{name}</b> (PID: {pid})\n"
+            "⚡ ЦП: <b>{cpu:.1f}%</b> | 🧠 ОЗУ: <b>{memory:.1f}%</b>\n"
+            "💾 Память: {memory_mb:.1f} МБ\n"
+            "⏰ Время работы: {uptime}\n"
+            "📊 Статус: {status}\n"
+        ),
+        'btn_system_overview': "🖥️ Обзор системы",
+        'btn_cpu_stats': "⚡ Статистика ЦП",
+        'btn_memory_stats': "🧠 Статистика памяти",
+        'btn_disk_stats': "💾 Использование диска",
+        'btn_network_stats': "🌐 Статистика сети",
+        'btn_top_processes': "🔝 Топ процессы",
+        'btn_refresh_stats': "🔄 Обновить",
+        'stats_updated': "✅ Статистика обновлена",
+        'stats_error': "❌ Ошибка получения статистики: {error}"
     }
 }
 

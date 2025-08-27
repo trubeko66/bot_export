@@ -19,6 +19,8 @@ from config import bot_config, export_config
 from exporters import ChannelExporter
 from user_settings import UserSettingsManager
 from languages import get_text, get_language_name
+from server_monitor import ServerMonitor
+from animation_helper import AnimationHelper
 
 # Configure logging
 logging.basicConfig(
@@ -34,6 +36,8 @@ class TelegramExportBot:
         self.application = None
         self.exporter = ChannelExporter()
         self.settings_manager = UserSettingsManager()
+        self.server_monitor = ServerMonitor()
+        self.animation_helper = AnimationHelper()
         
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start command"""
@@ -132,6 +136,7 @@ class TelegramExportBot:
             [InlineKeyboardButton(get_text(lang, 'btn_export_format'), callback_data="format_menu")],
             [InlineKeyboardButton(get_text(lang, 'btn_media_settings'), callback_data="media_menu")],
             [InlineKeyboardButton(get_text(lang, 'btn_message_limit'), callback_data="limit_menu")],
+            [InlineKeyboardButton(get_text(lang, 'btn_server_stats'), callback_data="server_stats_menu")],
             [InlineKeyboardButton(get_text(lang, 'btn_reset_settings'), callback_data="reset_settings")],
             [InlineKeyboardButton(get_text(lang, 'btn_help'), callback_data="help")],
         ]
@@ -168,6 +173,24 @@ class TelegramExportBot:
             await self.show_media_menu(update, context)
         elif data == "limit_menu":
             await self.show_limit_menu(update, context)
+        elif data == "server_stats_menu":
+            await self.show_server_stats_menu(update, context)
+        elif data == "system_overview":
+            await self.show_system_overview(update, context)
+        elif data == "cpu_stats":
+            await self.show_cpu_stats(update, context)
+        elif data == "memory_stats":
+            await self.show_memory_stats(update, context)
+        elif data == "disk_stats":
+            await self.show_disk_stats(update, context)
+        elif data == "network_stats":
+            await self.show_network_stats(update, context)
+        elif data == "top_processes":
+            await self.show_top_processes(update, context)
+        elif data.startswith("refresh_"):
+            # Handle refresh actions
+            refresh_type = data.replace("refresh_", "")
+            await self.refresh_stats(update, context, refresh_type)
         elif data == "help":
             await self.show_help(update, context)
         elif data == "reset_settings":
@@ -488,6 +511,370 @@ class TelegramExportBot:
             logger.error(f"Failed to send file: {str(e)}")
             error_text = get_text(lang, 'file_send_failed', error=str(e))
             await update.message.reply_text(error_text)
+
+    # Server Monitoring Methods
+    async def show_server_stats_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show server statistics menu"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        menu_text = get_text(lang, 'server_stats_title')
+        
+        keyboard = [
+            [InlineKeyboardButton(get_text(lang, 'btn_system_overview'), callback_data="system_overview")],
+            [InlineKeyboardButton(get_text(lang, 'btn_cpu_stats'), callback_data="cpu_stats")],
+            [InlineKeyboardButton(get_text(lang, 'btn_memory_stats'), callback_data="memory_stats")],
+            [InlineKeyboardButton(get_text(lang, 'btn_disk_stats'), callback_data="disk_stats")],
+            [InlineKeyboardButton(get_text(lang, 'btn_network_stats'), callback_data="network_stats")],
+            [InlineKeyboardButton(get_text(lang, 'btn_top_processes'), callback_data="top_processes")],
+            [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="main_menu")],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.callback_query.edit_message_text(
+            menu_text,
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.HTML
+        )
+    
+    async def show_system_overview(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show system overview with animated loading"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        # Show animated loading
+        loading_frames = ["🔄 Loading system info", "⚡ Gathering data", "📊 Processing stats"]
+        for frame in loading_frames:
+            await update.callback_query.edit_message_text(frame)
+            await asyncio.sleep(0.8)
+        
+        try:
+            system_info = self.server_monitor.get_system_info()
+            uptime_info = self.server_monitor.get_uptime()
+            cpu_info = self.server_monitor.get_cpu_usage()
+            memory_info = self.server_monitor.get_memory_usage()
+            
+            # Get system health indicator
+            health_emoji = self.animation_helper.get_system_health_emoji(
+                cpu_info['usage_percent'], 
+                memory_info['percent_used'], 
+                75  # Sample disk usage
+            )
+            
+            formatted_uptime = self.animation_helper.format_uptime(uptime_info['system_uptime'])
+            
+            overview_text = (
+                f"🐧 <b>System Overview</b> {health_emoji}\n\n"
+                f"🏷️ Hostname: <code>{system_info['hostname']}</code>\n"
+                f"💻 OS: {system_info['os']} {system_info['os_version']}\n"
+                f"🏗️ Architecture: {system_info['architecture']}\n"
+                f"🐍 Python: {system_info['python_version']}\n\n"
+                f"⏰ <b>Uptime Information</b>\n"
+                f"🖥️ System: {formatted_uptime}\n"
+                f"🤖 Bot: {self.animation_helper.format_uptime(uptime_info['bot_uptime'])}\n"
+                f"🚀 Boot Time: {uptime_info['boot_time']}\n\n"
+                f"📊 <b>Quick Stats</b>\n"
+                f"⚡ CPU: {self.animation_helper.get_progress_bar(cpu_info['usage_percent'])}\n"
+                f"🧠 RAM: {self.animation_helper.get_progress_bar(memory_info['percent_used'])}\n"
+                f"💾 Cores: {cpu_info['core_count']} @ {cpu_info['frequency_mhz']:.0f} MHz"
+            )
+            
+            keyboard = [
+                [InlineKeyboardButton(get_text(lang, 'btn_refresh_stats'), callback_data="refresh_system_overview")],
+                [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="server_stats_menu")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await update.callback_query.edit_message_text(
+                overview_text,
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.HTML
+            )
+            
+        except Exception as e:
+            error_text = get_text(lang, 'stats_error', error=str(e))
+            await update.callback_query.edit_message_text(error_text)
+    
+    async def show_cpu_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show CPU statistics with visual indicators"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        # Show animated loading
+        loading_frames = ["⚡ Scanning CPU", "📊 Measuring performance", "🚀 Analyzing cores"]
+        for frame in loading_frames:
+            await update.callback_query.edit_message_text(frame)
+            await asyncio.sleep(0.7)
+        
+        try:
+            cpu_info = self.server_monitor.get_cpu_usage()
+            
+            # Generate visual CPU usage
+            cpu_visual = self.animation_helper.get_cpu_visual(cpu_info['usage_percent'])
+            load_indicator = self.animation_helper.get_load_indicator(
+                cpu_info['load_average_1m'], 
+                cpu_info['core_count']
+            )
+            
+            cpu_text = (
+                f"⚡ <b>CPU Statistics</b>\n\n"
+                f"📊 Usage: <b>{cpu_info['usage_percent']:.1f}%</b>\n"
+                f"{cpu_visual}\n"
+                f"{self.animation_helper.get_progress_bar(cpu_info['usage_percent'])}\n\n"
+                f"🔢 Cores: <b>{cpu_info['core_count']}</b>\n"
+                f"⚡ Frequency: <b>{cpu_info['frequency_mhz']:.0f} MHz</b>\n\n"
+                f"📈 <b>Load Average</b> {load_indicator}\n"
+                f"1m: <code>{cpu_info['load_average_1m']:.2f}</code>\n"
+                f"5m: <code>{cpu_info['load_average_5m']:.2f}</code>\n"
+                f"15m: <code>{cpu_info['load_average_15m']:.2f}</code>"
+            )
+            
+            keyboard = [
+                [InlineKeyboardButton(get_text(lang, 'btn_refresh_stats'), callback_data="refresh_cpu_stats")],
+                [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="server_stats_menu")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await update.callback_query.edit_message_text(
+                cpu_text,
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.HTML
+            )
+            
+        except Exception as e:
+            error_text = get_text(lang, 'stats_error', error=str(e))
+            await update.callback_query.edit_message_text(error_text)
+    
+    async def show_memory_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show memory statistics with visual indicators"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        # Show animated loading
+        loading_frames = ["🧠 Scanning memory", "📊 Analyzing usage", "💾 Checking availability"]
+        for frame in loading_frames:
+            await update.callback_query.edit_message_text(frame)
+            await asyncio.sleep(0.7)
+        
+        try:
+            memory_info = self.server_monitor.get_memory_usage()
+            
+            # Generate visual memory usage
+            memory_visual = self.animation_helper.get_memory_visual(memory_info['percent_used'])
+            swap_visual = self.animation_helper.get_memory_visual(memory_info['swap_percent'])
+            
+            memory_text = (
+                f"🧠 <b>Memory Usage</b>\n\n"
+                f"📊 RAM Usage: <b>{memory_info['used_gb']:.1f} GB</b> / {memory_info['total_gb']:.1f} GB\n"
+                f"{memory_visual}\n"
+                f"{self.animation_helper.get_progress_bar(memory_info['percent_used'])}\n\n"
+                f"💾 Available: <b>{memory_info['available_gb']:.1f} GB</b>\n\n"
+                f"🔄 <b>Swap Memory</b>\n"
+                f"💿 Total: <b>{memory_info['swap_total_gb']:.1f} GB</b>\n"
+                f"📊 Used: <b>{memory_info['swap_used_gb']:.1f} GB</b>\n"
+                f"{swap_visual}\n"
+                f"{self.animation_helper.get_progress_bar(memory_info['swap_percent'])}"
+            )
+            
+            keyboard = [
+                [InlineKeyboardButton(get_text(lang, 'btn_refresh_stats'), callback_data="refresh_memory_stats")],
+                [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="server_stats_menu")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await update.callback_query.edit_message_text(
+                memory_text,
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.HTML
+            )
+            
+        except Exception as e:
+            error_text = get_text(lang, 'stats_error', error=str(e))
+            await update.callback_query.edit_message_text(error_text)
+    
+    async def show_disk_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show disk usage statistics with visual indicators"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        # Show animated loading
+        loading_frames = ["💾 Scanning disks", "📁 Analyzing usage", "📊 Calculating space"]
+        for frame in loading_frames:
+            await update.callback_query.edit_message_text(frame)
+            await asyncio.sleep(0.7)
+        
+        try:
+            disk_info = self.server_monitor.get_disk_usage()
+            
+            disk_text = f"💾 <b>Disk Usage</b>\n\n"
+            
+            for device, stats in disk_info.items():
+                health_emoji = self.animation_helper.get_disk_visual(stats['percent_used'])
+                progress_bar = self.animation_helper.get_progress_bar(stats['percent_used'])
+                
+                disk_item = (
+                    f"💽 <b>{device}</b> {health_emoji}\n"
+                    f"  📁 Mount: <code>{stats['mountpoint']}</code>\n"
+                    f"  📊 Used: <b>{stats['used_gb']:.1f} GB</b> / {stats['total_gb']:.1f} GB\n"
+                    f"  {progress_bar}\n"
+                    f"  💾 Free: <b>{stats['free_gb']:.1f} GB</b>\n"
+                    f"  🗂️ FS: {stats['filesystem']}\n\n"
+                )
+                disk_text += disk_item
+            
+            keyboard = [
+                [InlineKeyboardButton(get_text(lang, 'btn_refresh_stats'), callback_data="refresh_disk_stats")],
+                [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="server_stats_menu")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await update.callback_query.edit_message_text(
+                disk_text[:4000],  # Limit message length
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.HTML
+            )
+            
+        except Exception as e:
+            error_text = get_text(lang, 'stats_error', error=str(e))
+            await update.callback_query.edit_message_text(error_text)
+    
+    async def show_network_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show network statistics with activity indicators"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        # Show animated loading
+        loading_frames = ["🌐 Scanning network", "📶 Measuring throughput", "📊 Analyzing traffic"]
+        for frame in loading_frames:
+            await update.callback_query.edit_message_text(frame)
+            await asyncio.sleep(0.7)
+        
+        try:
+            network_info = self.server_monitor.get_network_usage()
+            
+            network_text = f"🌐 <b>Network Activity</b>\n\n"
+            
+            active_interfaces = 0
+            for interface, stats in list(network_info.items())[:5]:  # Limit to 5 interfaces
+                if stats['bytes_sent_total'] > 0 or stats['bytes_recv_total'] > 0:  # Skip inactive interfaces
+                    active_interfaces += 1
+                    arrows = self.animation_helper.get_network_arrows(
+                        stats['bytes_sent_per_sec'], 
+                        stats['bytes_recv_per_sec']
+                    )
+                    
+                    sent_formatted = self.animation_helper.format_bytes_with_color(stats['bytes_sent_total'])
+                    recv_formatted = self.animation_helper.format_bytes_with_color(stats['bytes_recv_total'])
+                    
+                    network_item = (
+                        f"🔌 <b>{interface}</b> {arrows}\n"
+                        f"  📤 Sent: {sent_formatted}\n"
+                        f"  📥 Received: {recv_formatted}\n"
+                        f"  📊 Rate: ↑{self.server_monitor.format_bytes(stats['bytes_sent_per_sec'])}/s "
+                        f"↓{self.server_monitor.format_bytes(stats['bytes_recv_per_sec'])}/s\n"
+                        f"  📦 Packets: ↑{stats['packets_sent']:,} ↓{stats['packets_recv']:,}\n"
+                    )
+                    
+                    if stats['errors_out'] > 0 or stats['errors_in'] > 0:
+                        network_item += f"  ❌ Errors: ↑{stats['errors_out']} ↓{stats['errors_in']}\n"
+                    
+                    network_text += network_item + "\n"
+            
+            if active_interfaces == 0:
+                network_text += "😴 No active network interfaces found\n"
+            
+            keyboard = [
+                [InlineKeyboardButton(get_text(lang, 'btn_refresh_stats'), callback_data="refresh_network_stats")],
+                [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="server_stats_menu")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await update.callback_query.edit_message_text(
+                network_text[:4000],  # Limit message length
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.HTML
+            )
+            
+        except Exception as e:
+            error_text = get_text(lang, 'stats_error', error=str(e))
+            await update.callback_query.edit_message_text(error_text)
+    
+    async def show_top_processes(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show top processes with status indicators"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        # Show animated loading
+        loading_frames = ["🔝 Scanning processes", "📊 Ranking by usage", "🏆 Finding top performers"]
+        for frame in loading_frames:
+            await update.callback_query.edit_message_text(frame)
+            await asyncio.sleep(0.8)
+        
+        try:
+            processes = self.server_monitor.get_top_processes(10)
+            
+            processes_text = f"🔝 <b>Top 10 Processes</b>\n\n"
+            
+            for i, process in enumerate(processes[:10], 1):
+                status_emoji = self.animation_helper.get_status_emoji(process['status'])
+                cpu_bar = self.animation_helper.get_progress_bar(process['cpu_percent'], 6)
+                memory_bar = self.animation_helper.get_progress_bar(process['memory_percent'], 6)
+                
+                process_item = (
+                    f"{i}. {status_emoji} <b>{process['name'][:15]}</b>\n"
+                    f"    🏷️ PID: <code>{process['pid']}</code>\n"
+                    f"    ⚡ CPU: {cpu_bar}\n"
+                    f"    🧠 RAM: {memory_bar}\n"
+                    f"    💾 {process['memory_mb']:.0f} MB | ⏰ {process['uptime']}\n\n"
+                )
+                processes_text += process_item
+            
+            keyboard = [
+                [InlineKeyboardButton(get_text(lang, 'btn_refresh_stats'), callback_data="refresh_top_processes")],
+                [InlineKeyboardButton(get_text(lang, 'btn_back'), callback_data="server_stats_menu")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await update.callback_query.edit_message_text(
+                processes_text[:4000],  # Limit message length
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.HTML
+            )
+            
+        except Exception as e:
+            error_text = get_text(lang, 'stats_error', error=str(e))
+            await update.callback_query.edit_message_text(error_text)
+    
+    async def refresh_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE, stats_type: str):
+        """Refresh specific statistics"""
+        user_id = update.effective_user.id
+        user_settings = self.settings_manager.get_user_settings(user_id)
+        lang = user_settings.language
+        
+        # Show refresh confirmation
+        refresh_msg = get_text(lang, 'stats_updated')
+        await update.callback_query.answer(refresh_msg)
+        
+        # Redirect to appropriate stats view
+        if stats_type == "system_overview":
+            await self.show_system_overview(update, context)
+        elif stats_type == "cpu_stats":
+            await self.show_cpu_stats(update, context)
+        elif stats_type == "memory_stats":
+            await self.show_memory_stats(update, context)
+        elif stats_type == "disk_stats":
+            await self.show_disk_stats(update, context)
+        elif stats_type == "network_stats":
+            await self.show_network_stats(update, context)
+        elif stats_type == "top_processes":
+            await self.show_top_processes(update, context)
 
     def run(self):
         """Start the bot"""
