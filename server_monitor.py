@@ -7,7 +7,7 @@ import psutil
 import shutil
 import time
 import platform
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime, timedelta
 
 class ServerMonitor:
@@ -43,7 +43,7 @@ class ServerMonitor:
         
         return {
             'usage_percent': cpu_percent,
-            'core_count': float(cpu_count),
+            'core_count': float(cpu_count or 0),
             'frequency_mhz': cpu_freq.current if cpu_freq else 0.0,
             'load_average_1m': load_avg[0] if load_avg else 0.0,
             'load_average_5m': load_avg[1] if load_avg else 0.0,
